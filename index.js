@@ -1,9 +1,9 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const Groq = require('groq-sdk');
-const express = require('express');
+const express = require('express'); // ضروري لمنع السيرفر من التوقف
 
-// --- إعداد السيرفر لمنع الإغلاق التلقائي في Render ---
+// --- إعداد السيرفر لمنع مشكلة الـ Timed Out في Render ---
 const app = express();
 const port = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('السكرتير الذكي يعمل بنجاح!'));
@@ -22,7 +22,7 @@ const client = new Client({
     }
 });
 
-// --- حل مشكلة الباركود (رابط مباشر) ---
+// --- حل مشكلة الباركود (يعطيك رابط مباشر تفتحه بجوالك) ---
 client.on('qr', (qr) => {
     console.log('--------------------------------------------------');
     console.log('يا ريان.. انسخ هذا الرابط وافتحه في صفحة جديدة:');
@@ -34,7 +34,7 @@ client.on('ready', () => {
     console.log('🚀 السكرتير الذكي متصل وجاهز لخدمتك يا ريان!');
 });
 
-// --- منطق الرد والذكاء (اللي استعدناه الآن) ---
+// --- منطق الرد والذكاء الخاص ببوتك ---
 client.on('message_create', async (msg) => {
     if (msg.body.includes(BOT_MARKER)) return;
 
