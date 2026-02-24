@@ -1,0 +1,24 @@
+{
+  "name": "rayan-agent",
+  "version": "1.0.0",
+  "description": "WhatsApp Digital Assistant for R I Y A N",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "whatsapp",
+    "bot",
+    "groq",
+    "llama"
+  ],
+  "author": "R I Y A N",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "groq-sdk": "^0.15.0",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#main"
+  }
+}
