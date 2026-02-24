@@ -16,8 +16,11 @@ const client = new Client({
     }
 });
 
-client.on('qr', qr => { 
-    qrcode.generate(qr, { small: true }); 
+client.on('qr', qr => {
+    console.log('=========================================');
+    console.log('انسخ النص الطويل اللي تحت هذا بالضبط:');
+    console.log(qr);
+    console.log('=========================================');
 });
 client.on('ready', () => {
     console.log('🚀 السكرتير الذكي متصل وجاهز لخدمتك يا ريان!');
