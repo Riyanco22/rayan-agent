@@ -1,54 +1,59 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const Groq = require('groq-sdk');
+const express = require('express');
 
-// إعداد Groq باستخدام متغيرات البيئة للأمان
+// --- إعداد السيرفر لمنع الإغلاق التلقائي في Render ---
+const app = express();
+const port = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('السكرتير الذكي يعمل بنجاح!'));
+app.listen(port, () => console.log(`السيرفر مستقر على منفذ ${port}`));
+
+// --- إعدادات البوت الأساسية ---
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-const BOT_MARKER = '\u200B'; // علامة مخفية لتمييز ردود البوت
-let interactionLog = []; // سجل بسيط لمعرفة من تواصل مع البوت (سيحذف عند إعادة تشغيل السيرفر)
+const BOT_MARKER = '\u200B'; 
+let interactionLog = []; 
 
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        headless: true
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
 
+// --- حل مشكلة الباركود (رابط مباشر) ---
 client.on('qr', (qr) => {
     console.log('--------------------------------------------------');
-    console.log('يا ريان انسخ الرابط اللي تحت هذا وافتحه بمتصفحك:');
+    console.log('يا ريان.. انسخ هذا الرابط وافتحه في صفحة جديدة:');
     console.log(`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qr)}&size=300x300`);
     console.log('--------------------------------------------------');
 });
+
 client.on('ready', () => {
     console.log('🚀 السكرتير الذكي متصل وجاهز لخدمتك يا ريان!');
 });
 
+// --- منطق الرد والذكاء (اللي استعدناه الآن) ---
 client.on('message_create', async (msg) => {
-    // 1. منع اللوب: إذا كانت الرسالة من البوت نفسه (تحتوي على العلامة)، تجاهلها فوراً
     if (msg.body.includes(BOT_MARKER)) return;
 
     const chat = await msg.getChat();
-    const isMe = msg.fromMe; // هل الرسالة مرسلة مني أنا (ريان)؟
+    const isMe = msg.fromMe; 
 
-    // تسجيل التواصل (لمنحه لريان لاحقاً)
+    // تسجيل التواصل
     if (!isMe && !chat.isGroup) {
         interactionLog.push({
             name: chat.name,
             time: new Date().toLocaleTimeString('ar-SA'),
             msg: msg.body.substring(0, 20) + "..."
         });
-        // حفظ آخر 10 تواصلات فقط
         if (interactionLog.length > 10) interactionLog.shift();
     }
 
-    // 2. تحديد التعليمات (System Instruction) بناءً على المرسل
     let systemPrompt = `أنت المساعد الرقمي لـ R I Y A N. رد بلهجة سعودية وقورة ومختصرة.`;
 
     if (isMe) {
-        // تعليمات خاصة إذا كان ريان هو اللي يكلم البوت
         systemPrompt += ` أنت الآن تتحدث مع صاحبك "ريان". كن ودوداً جداً، أجب على أسئلته، وإذا سألك عن "من كلمك" أعطه ملخصاً من السجل المتاح لديك.`;
         if (msg.body.includes("من كلمك") || msg.body.includes("تقرير")) {
             const report = interactionLog.length > 0
@@ -57,7 +62,6 @@ client.on('message_create', async (msg) => {
             return await msg.reply(`هلا ريان، أبشر.. هذي قائمة بآخر من تواصل معي:\n${report}${BOT_MARKER}`);
         }
     } else {
-        // تعليمات للرد على الغرباء
         systemPrompt += ` لا تذكر ريان إلا إذا سألك المرسل. ممنوع ذكر تفاصيل العمل (جمعية سعداء) إلا بطلب.`;
         if (msg.body.length < 2 || msg.isStatus || chat.isGroup) return;
     }
@@ -74,7 +78,6 @@ client.on('message_create', async (msg) => {
 
         let replyText = chatCompletion.choices[0].message.content.trim() + BOT_MARKER;
 
-        // التوقيع يظهر فقط للغرباء وليس لريان
         if (!isMe) {
             replyText += `\n\n---\nDigital Assistant | R I Y A N Office 💎`;
         }
