@@ -16,11 +16,11 @@ const client = new Client({
     }
 });
 
-client.on('qr', qr => {
-    console.log('=========================================');
-    console.log('انسخ النص الطويل اللي تحت هذا بالضبط:');
-    console.log(qr);
-    console.log('=========================================');
+client.on('qr', (qr) => {
+    console.log('--------------------------------------------------');
+    console.log('يا ريان انسخ الرابط اللي تحت هذا وافتحه بمتصفحك:');
+    console.log(`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qr)}&size=300x300`);
+    console.log('--------------------------------------------------');
 });
 client.on('ready', () => {
     console.log('🚀 السكرتير الذكي متصل وجاهز لخدمتك يا ريان!');
